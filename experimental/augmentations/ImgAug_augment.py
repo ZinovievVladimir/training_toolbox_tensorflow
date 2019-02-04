@@ -1,8 +1,11 @@
 import tensorflow as tf
+import cv2
 import time
+import numpy as np
 from time import time
+from imgaug import augmenters as iaa
 
-class TFAug:
+class ImgAugAug:
     def __init__(self, image_Dir = "/home/vladimir/work/test_image/vehicle/*.jpg", batch_Size = 64, Iterations = 1000):
         self.image_dir = image_Dir
         self.batch_size = batch_Size
@@ -35,18 +38,36 @@ class TFAug:
         # Generate batch
         self.num_preprocess_threads = 4
         self.min_queue_examples = 256
+
+        self.iaa_flip = iaa.Fliplr(0.5)
+        self.iaa_brightness = iaa.Add(-100)
+        self.iaa_ContrastNormalization = iaa.ContrastNormalization((1.5, 1.5))
+        self.iaa_satur = iaa.AddToHueAndSaturation((0, -100))
+
+    def ia_flip(self, img):
+        return self.iaa_flip.augment_image(img)
+
+    def ia_brightness(self, img):
+        return self.iaa_brightness.augment_image(img)
+
+    def ia_contrast(self, img):
+        return self.iaa_ContrastNormalization.augment_image(img)
+
+    def ia_saturation(self, img):
+        return self.iaa_satur.augment_image(img)
+
     def flip(self):
         config = tf.ConfigProto()
-        flip_res = tf.image.flip_left_right(self.image)
 
+        flip_res = tf.py_func(self.ia_flip, [self.image], (tf.uint8,))
+        flip_res[0].set_shape((450, 800, 3))
         images = tf.train.shuffle_batch(
             [flip_res],
             batch_size=self.batch_size,
             num_threads=self.num_preprocess_threads,
             capacity=self.min_queue_examples + 3 * self.batch_size,
             min_after_dequeue=self.min_queue_examples)
-
-        # flip_res = tf.image.flip_left_right(self.images)
+        # flip_res = tf.py_func(self.cv_flip, [self.images], (tf.uint8,))
         with tf.Session(config=config) as sess:
             # Required to get the filename matching to run.
             tf.local_variables_initializer().run()
@@ -63,7 +84,8 @@ class TFAug:
     def brightness(self):
         config = tf.ConfigProto()
 
-        brightness_res = tf.image.adjust_brightness(self.image, delta=0.5)
+        brightness_res = tf.py_func(self.ia_brightness, [self.image], (tf.uint8,))
+        brightness_res[0].set_shape((450, 800, 3))
         images = tf.train.shuffle_batch(
             [brightness_res],
             batch_size=self.batch_size,
@@ -85,7 +107,8 @@ class TFAug:
     def contrast(self):
         config = tf.ConfigProto()
 
-        contrast_res = tf.image.adjust_contrast(self.image, contrast_factor=1.5)
+        contrast_res = tf.py_func(self.ia_contrast, [self.image], (tf.uint8,))
+        contrast_res[0].set_shape((450, 800, 3))
         images = tf.train.shuffle_batch(
             [contrast_res],
             batch_size=self.batch_size,
@@ -107,7 +130,8 @@ class TFAug:
     def saturation(self):
         config = tf.ConfigProto()
 
-        saturation_res = tf.image.adjust_saturation(self.image, saturation_factor=0.2)
+        saturation_res = tf.py_func(self.ia_saturation, [self.image], (tf.uint8,))
+        saturation_res[0].set_shape((450, 800, 3))
         images = tf.train.shuffle_batch(
             [saturation_res],
             batch_size=self.batch_size,

@@ -102,7 +102,7 @@ class DALIAug:
 
     def flip(self):
         config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.4
         with tf.Session(config=config) as sess:
             pipe_img_per_sec = []
             for i in range(self.iterations):
@@ -117,7 +117,6 @@ class DALIAug:
 
     def brightness(self):
         config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
         with tf.Session(config=config) as sess:
             pipe_img_per_sec = []
             for i in range(self.iterations):
@@ -132,7 +131,6 @@ class DALIAug:
 
     def contrast(self):
         config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
         with tf.Session(config=config) as sess:
             pipe_img_per_sec = []
             for i in range(self.iterations):
@@ -147,7 +145,6 @@ class DALIAug:
 
     def saturation(self):
         config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
         with tf.Session(config=config) as sess:
             pipe_img_per_sec = []
             for i in range(self.iterations):
